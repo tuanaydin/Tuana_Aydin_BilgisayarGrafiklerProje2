@@ -1,0 +1,109 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="glad.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="CMakeLists.txt" />
+    <Text Include="Tuana_Ay.b6e4df6d\x64\Debug\Tuana_Aydin_BilgisayarGrafiklerProje2.log" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="glfw3.dll" />
+    <None Include="x64\Debug\Tuana_Aydin_BilgisayarGrafiklerProje2.exe" />
+    <None Include="x64\Debug\Tuana_Aydin_BilgisayarGrafiklerProje2.pdb" />
+    <None Include="Tuana_Ay.b6e4df6d\x64\Debug\Tuana_Aydin_BilgisayarGrafiklerProje2.exe.recipe" />
+    <None Include="Tuana_Ay.b6e4df6d\x64\Debug\Tuana_Aydin_BilgisayarGrafiklerProje2.ilk" />
+    <None Include="Tuana_Ay.b6e4df6d\x64\Debug\vc143.idb" />
+    <None Include="Tuana_Ay.b6e4df6d\x64\Debug\vc143.pdb" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stb_image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stb_easy_font.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="angele-kamp--OQbUQce54k-unsplash.jpg">
+      <Filter>Source Files</Filter>
+    </Image>
+    <Image Include="sheldon-liu-FrQKfzoTgsw-unsplash.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Texturelabs_Atmosphere_147S.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Texturelabs_Sky_146S.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Texturelabs_Brick_171S.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="paul-blenkhorn-832BT5eutOY-unsplash.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Texturelabs_Details_184S.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Texturelabs_InkPaint_374S.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Texturelabs_InkPaint_393S.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Texturelabs_Sky_121S.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Mona_Lisa.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Mona_Lisa_ters.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="William-Hogarth-An-Election-The-Election-Entertainment-Soane-Museum.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="The-Last-Supper-Restored-Da-Vinci_32x16.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Johannes_Vermeer_(1632-1675)_-_The_Girl_With_The_Pearl_Earring_(1665).jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="500px-Leonardo_da_Vinci_-_Last_Supper_(copy)_-_WGA12732.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="scream.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Texturelabs_Brick_159S.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Texturelabs_Brick_142S.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Object Include="Tuana_Ay.b6e4df6d\x64\Debug\glad.obj" />
+    <Object Include="Tuana_Ay.b6e4df6d\x64\Debug\main.obj" />
+  </ItemGroup>
+</Project>
