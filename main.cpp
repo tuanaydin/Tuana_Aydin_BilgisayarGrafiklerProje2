@@ -171,7 +171,7 @@ float catYaw = 0.0f;
 
 
 // Kamera Ayarlarý
-glm::vec3 cameraPos = glm::vec3(0.0f, 1.0f, 5.0f);//Kamera konumu x=0,y=1,z=5
+glm::vec3 cameraPos = glm::vec3(0.0f, 10.6f, 5.0f);//Kamera konumu 
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);//Kameranýn baktýðý yön
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);//Kameranýn yukarýsý
 float yaw = -90.0f, pitch = 0.0f;//Kameranýn açýsý 
