@@ -139,6 +139,7 @@ const int maxFloor = 2;
 int currentFloor = 0;
 float floorHeights[] = { 0.0f, 10.1f, 20.2f };
 
+bool catIsOnElevator = false;
 
 ////Deneme 
 // Kamera modlarý
@@ -480,36 +481,29 @@ int main()
                 }
             }
         }
-        //// ---- BURAYA EKLE ----
-        //if (currentCameraMode == THIRD_PERSON) {
-        //    glm::vec3 offset(0.0f, 3.0f, 5.0f);
-        //    cameraPos = catPosition + offset;
-        //    cameraFront = glm::normalize(catPosition - cameraPos);
-        //}
-        //else if (currentCameraMode == FIRST_PERSON) {
-        //    cameraPos = catPosition + glm::vec3(0.0f, 0.7f, 0.0f); // Kedi göz yüksekliði
-        //    // cameraFront mouse_callback ile güncelleniyor, aynen býrak.
-        //}
-        //// ---- EKLEME SONU ----
+        // Asansör kutusu merkez pozisyonu (ör: (10,0,0) veya (0,0,0))
+        glm::vec3 shaftCenter = glm::vec3(0.0f, 0.0f, -17.0f);
 
-        //if (currentCameraMode == THIRD_PERSON) {
-        //    glm::vec3 offset(0.0f, 3.0f, 5.0f);
-        //    cameraPos = catPosition + offset;
-        //    cameraFront = glm::normalize(catPosition - cameraPos);
-        //}
+        glm::vec3 platformCenter = shaftCenter + glm::vec3(0.0f, elevatorY, -1.0f);
+        float platformHalfWidth = 7.5f / 2.0f;
+        float platformHalfDepth = 3.5f / 2.0f;
 
+        bool catCurrentlyOnElevator =
+            fabs(catPosition.x - platformCenter.x) < platformHalfWidth &&
+            fabs(catPosition.z - platformCenter.z) < platformHalfDepth &&
+            fabs(catPosition.y - platformCenter.y) < 1.5f;
 
-        //else if (currentCameraMode == FIRST_PERSON) {
-        //    // Kedi baþý hizasý: biraz üstte ve önde
-        //    cameraPos = catPosition + glm::vec3(0.0f, 0.85f, 1.5f);
-        //    // cameraFront mouse ile yönetiliyor
-        //}
-
-        //if (currentCameraMode == FIRST_PERSON) {
-        //    cameraPos = catPosition + glm::vec3(0.0f, 1.0f, 0.0f); // Kedinin baþý seviyesinde
-        //    // cameraFront = kedinin bakýþ yönü, yani catYaw
-        //    cameraFront = glm::vec3(sin(catYaw), 0, cos(catYaw));
-        //}
+        if (catIsOnElevator && catCurrentlyOnElevator) {
+            catPosition.y = elevatorY + 0.6f;
+        }
+        else if (catIsOnElevator && !catCurrentlyOnElevator) {
+            catIsOnElevator = false;
+        }
+        else if (!catIsOnElevator && catCurrentlyOnElevator) {
+            catIsOnElevator = true;
+            catPosition.y = elevatorY + 0.6f;
+        }
+        
 
 
         glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)WIDTH / HEIGHT, 0.1f, 100.0f);
@@ -530,15 +524,7 @@ int main()
            glm::vec3 ileriVektor = glm::normalize(glm::vec3(sin(glm::radians(yaw)), 0, cos(glm::radians(yaw))));
            cameraPos = catPosition + glm::vec3(0.0f, 0.7f, 0.0f) + ileriVektor * ileriMesafe;
         }
-        
-        
-        
-        
-        
-        
-        
-        
-        
+    
         
         GLint modelLoc = glGetUniformLocation(shaderProgram, "model");
         GLint objectColorLoc = glGetUniformLocation(shaderProgram, "objectColor");
@@ -928,10 +914,6 @@ int main()
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
 
-        //Asansör 
-        // Asansör platform yüksekliði
-       // float elevatorHeight = 0.5f + sin(glfwGetTime()) * 2.0f; // Zamanla yukarý-aþaðý hareket eder, örnek animasyon
-
         // Kapý animasyonu hesaplama
         float doorMaxOffset = 1.5f;
         if (doorAnimTime < doorAnimDuration) {
@@ -940,24 +922,12 @@ int main()
         float progress = glm::clamp(doorAnimTime / doorAnimDuration, 0.0f, 1.0f);
         float currentOffset = doorsOpen ? progress * doorMaxOffset : (1.0f - progress) * doorMaxOffset;
 
-        //// Asansör hareketi güncelle
-        //if (elevatorMovingUp) {
-        //    elevatorY += elevatorSpeed * deltaTime;
-        //    if (elevatorY >= elevatorTargetY) {
-        //        elevatorY = elevatorTargetY;
-        //        elevatorMovingUp = false;
-        //        doorsOpen = true;
-        //        doorAnimTime = 0.0f;
-        //    }
-        //}
 
         
         //Asansör Rengi
         glm::vec3 asansör_rengi(0.2f, 0.2f, 0.2f);
         glUniform3fv(objectColorLoc, 1, glm::value_ptr(asansör_rengi));
 
-        // Asansör kutusu merkez pozisyonu (ör: (10,0,0) veya (0,0,0))
-        glm::vec3 shaftCenter = glm::vec3(0.0f, 0.0f, -17.0f);
 
         // ALT TABAN
         model = glm::translate(glm::mat4(1.0f), shaftCenter + glm::vec3(0.0f, 0.0f, -1.75f));
@@ -1385,141 +1355,7 @@ void processInput(GLFWwindow* window){
 
 
 
-    //Kapýnýn Açýlýp Kapanmasý
-    /*static bool mPressedLastFrame = false;
-    if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS) {
-        if (!mPressedLastFrame && playerIsNearDoor) {
-            roomDoorOpen = !roomDoorOpen;
-            roomDoorAnim = 0.0f;
-        }
-        mPressedLastFrame = true;
     }
-    else {
-        mPressedLastFrame = false;
-    }*/
-
-  /*  float catSpeed = 2.0f * deltaTime;
-    if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
-        currentCameraMode = FIRST_PERSON;
-    if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)
-        currentCameraMode = THIRD_PERSON;
-
-    if (currentCameraMode == FIRST_PERSON) {
-        glm::vec3 forward = glm::vec3(sin(catYaw), 0, cos(catYaw));
-        glm::vec3 right = glm::normalize(glm::cross(forward, glm::vec3(0, 1, 0)));
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-            catPosition += forward * catSpeed;
-        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-            catPosition -= forward * catSpeed;
-        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-            catPosition -= right * catSpeed;
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-            catPosition += right * catSpeed;
-    }
-    else {
-        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-            catPosition.z += catSpeed;
-        if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-            catPosition.z -= catSpeed;
-        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-            catPosition.x -= catSpeed;
-        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-            catPosition.x += catSpeed;*/
-   //}
-   // if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-    //    glfwSetWindowShouldClose(window, true);
-    
-    
-    
-    //const float catSpeed = 2.0f * deltaTime;
-
-    //// Mod geçiþi en baþta olmalý!
-    //if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
-    //    currentCameraMode = FIRST_PERSON;
-    //if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)
-    //    currentCameraMode = THIRD_PERSON;
-
-    //if (currentCameraMode == FIRST_PERSON) {
-    //    glm::vec3 forward = glm::vec3(sin(catYaw), 0, cos(catYaw));
-    //    glm::vec3 right = glm::normalize(glm::cross(forward, glm::vec3(0, 1, 0)));
-
-    //    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-    //        catPosition += forward * catSpeed;
-    //    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-    //        catPosition -= forward * catSpeed;
-    //    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-    //        catPosition -= right * catSpeed;
-    //    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-    //        catPosition += right * catSpeed;
-    //}
-    //else {
-    //    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-    //        catPosition.z += catSpeed;
-    //    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-    //        catPosition.z -= catSpeed;
-    //    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-    //        catPosition.x -= catSpeed;
-    //    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-    //        catPosition.x += catSpeed;
-    //}
-
-    //if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-    //    glfwSetWindowShouldClose(window, true);
-}
-
-
-
-
-
-   // //////if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-   // ////if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-   // ////    catPosition.z -= catSpeed;
-   // ////if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-   // ////    catPosition.z += catSpeed;
-   // ////if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-   // ////    catPosition.x -= catSpeed;
-   // ////if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-   // ////    catPosition.x += catSpeed;
-
-
-   // //   // FPS MODUNDA: Kediyi kamera yönüne göre hareket ettir
-   // //if (currentCameraMode == FIRST_PERSON) {
-   // //    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-   // //        catPosition += cameraFront * catSpeed;
-   // //    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-   // //        catPosition -= cameraFront * catSpeed;
-   // //    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-   // //        catPosition -= glm::normalize(glm::cross(cameraFront, cameraUp)) * catSpeed;
-   // //    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-   // //        catPosition += glm::normalize(glm::cross(cameraFront, cameraUp)) * catSpeed;
-   // //}
-   // //// THIRD_PERSON MODUNDA: Kedi eski x/z eksenlerinde hareket etsin
-   // //else {
-   // //    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-   // //        catPosition.z -= catSpeed;
-   // //    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-   // //        catPosition.z += catSpeed;
-   // //    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-   // //        catPosition.x -= catSpeed;
-   // //    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-   // //        catPosition.x += catSpeed;
-   // //}
-
-   // 
-   // if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)//Ekrandan çýkýþ
-   //     glfwSetWindowShouldClose(window, true);
-   // /*
-   // if () {
-   //     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-   //         cameraPos += cameraSpeed * cameraFront;
-   //     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-   //         cameraPos -= cameraSpeed * cameraFront;
-   //     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-   //         cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-   //     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-   //         cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;*/
-
-   // }
 
 
 
@@ -1604,146 +1440,6 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
     cameraFront = glm::normalize(front);
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    /*  static bool firstMouse = true;
-    static float lastX = WIDTH / 2.0f, lastY = HEIGHT / 2.0f;*/
-
-    //if (firstMouse) {
-    //    lastX = xpos;
-    //    lastY = ypos;
-    //    firstMouse = false;
-    //}
-    //float xoffset = xpos - lastX;
-    //float yoffset = lastY - ypos;
-    //lastX = xpos;
-    //lastY = ypos;
-
-    //float sensitivity = 0.1f;
-    //xoffset *= sensitivity;
-    //yoffset *= sensitivity;
-
-    //if (currentCameraMode == FIRST_PERSON) {
-    //    catYaw += glm::radians(xoffset); // Radyan olarak biriktir!
-    //    pitch += yoffset;
-    //    if (pitch > 89.0f) pitch = 89.0f;
-    //    if (pitch < -89.0f) pitch = -89.0f;
-    //}
-    //else {
-    //    yaw += xoffset;
-    //    pitch += yoffset;
-    //    if (pitch > 89.0f) pitch = 89.0f;
-    //    if (pitch < -89.0f) pitch = -89.0f;
-    //}
-    
-    //static bool firstMouse = true;
-    //static float lastX = 0.0f, lastY = 0.0f;
-    //extern CameraMode currentCameraMode;
-    //extern float yaw, pitch;
-    //extern float catYaw;
-
-    //// Ýlk mouse hareketinde ilk deðerleri ata
-    //if (firstMouse) {
-    //    lastX = xpos;
-    //    lastY = ypos;
-    //    firstMouse = false;
-    //    return;
-    //}
-
-    //// Mouse hareketi farkýný hesapla
-    //float xoffset = xpos - lastX;
-    //float yoffset = lastY - ypos;
-    //lastX = xpos;
-    //lastY = ypos;
-
-    //// Hassasiyet uygula
-    //float sensitivity = 0.1f;
-    //xoffset *= sensitivity;
-    //yoffset *= sensitivity;
-
-    //if (currentCameraMode == FIRST_PERSON) {
-    //    catYaw += xoffset * 0.01f; // Kedinin yönünü deðiþtir (FPS bakýþ yönü)
-    //    pitch += yoffset * 0.01f;  // Yukarý/aþaðý bakýþ
-    //    if (pitch > 89.0f) pitch = 89.0f;
-    //    if (pitch < -89.0f) pitch = -89.0f;
-    //}
-    //else {
-    //    yaw += xoffset;
-    //    pitch += yoffset;
-    //    if (pitch > 89.0f) pitch = 89.0f;
-    //    if (pitch < -89.0f) pitch = -89.0f;
-    //}
-
-    //// FPS modunda kamera, kedinin yönünü takip edecek
-    //glm::vec3 front;
-    //if (currentCameraMode == FIRST_PERSON) {
-    //    front.x = sin(catYaw) * cos(glm::radians(pitch));
-    //    front.y = sin(glm::radians(pitch));
-    //    front.z = cos(catYaw) * cos(glm::radians(pitch));
-    //}
-    //else {
-    //    front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-    //    front.y = sin(glm::radians(pitch));
-    //    front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-    //}
-    //
-    //cameraFront = glm::normalize(front);
-    
-    
-     
-    
-    ////if (currentCameraMode == FIRST_PERSON) {
-    ////    catYaw += xoffset * 0.01f; // Hassasiyeti ayarla
-    ////    pitch += yoffset * 0.01f;  // istersen yukarý/aþaðý bakýþ için
-    ////}
-
-
-    //if (firstMouse) //Ýlk fare hareketi
-    //{
-    //    lastX = xpos;
-    //    lastY = ypos;
-    //    firstMouse = false;
-    //    return;
-    //}
-
-    ////Poziyon farklarý
-    //float xoffset = xpos - lastX;
-    //float yoffset = lastY - ypos;
-    //lastX = xpos; lastY = ypos;
-    ////Hassasiyet
-    //float sensitivity = 0.1f;
-    //xoffset *= sensitivity;
-    //yoffset *= sensitivity;
-    ////Yön açýlarý 
-    //yaw += xoffset;//saða sola dönüþ 
-    //pitch += yoffset;//Yukarý aþaðý dönüþ
-    ////Sýnýrlandýrma baþ aþaðý olamamsý için 90 derecede
-    //if (pitch > 89.0f)
-    //{
-    //    pitch = 89.0f;
-    //}
-    //if (pitch < -89.0f) {
-    //    pitch = -89.0f;
-    //}
-    ////Yeni yön vektörünün hesabý
-    //glm::vec3 front;
-    //front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-    //front.y = sin(glm::radians(pitch));
-    //front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-    //cameraFront = glm::normalize(front);
 }
 
 
