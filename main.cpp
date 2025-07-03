@@ -118,6 +118,9 @@ float doorAnimDuration = 1.0f;
 //const float elevatorTargetY = 15.0f; // Hedef kat yüksekliði
 //const float elevatorSpeed = 2.0f;    // Birim/saniye çýkýþ hýzý
 
+//elektrik
+bool elektrikAcik = false;  // Elektrik durumu
+
 
 bool elevatorMoving = false;
 bool elevatorGoingUp = false;
@@ -425,13 +428,24 @@ int main()
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        
-        if (elevatorWaitTime > 0.0f) {
-            elevatorWaitTime -= deltaTime;
-            if (elevatorWaitTime <= 0.0f) {
-                elevatorMoving = true;
+        if (!elektrikAcik) {
+            // Asansörün hareket etmesini engelle
+            elevatorMoving = false;
+            elevatorWaitTime = 0.0f;
+        }
+        else {
+
+
+            if (elevatorWaitTime > 0.0f) {
+                elevatorWaitTime -= deltaTime;
+                if (elevatorWaitTime <= 0.0f) {
+                    if (fabs(elevatorY - floorHeights[currentFloor]) > 0.01f)
+                        elevatorMoving = true;
+                }
             }
         }
+
+
         //std::cout << "Kat: " << currentFloor << " | Yükseklik: " << elevatorY << " | Hareket: " << elevatorMoving << std::endl;
         //std::cout << "yukarý Tuþ: " << glfwGetKey(mainwindow, GLFW_KEY_UP) << std::endl;
 
@@ -875,7 +889,7 @@ int main()
         glm::vec3 kutu_rengi1(1.0f,0.0f, 0.0f);
         glUniform3fv(objectColorLoc, 1, glm::value_ptr(kutu_rengi1));
 
-        model = glm::translate(glm::mat4(1.0f), glm::vec3(-17.0f, 3.5f, 12.5f));
+        model = glm::translate(glm::mat4(1.0f), glm::vec3(-17.0f, 0.5f, 12.5f));
         model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
         glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -1019,7 +1033,17 @@ int main()
         odaRightDoor = glm::scale(odaRightDoor, glm::vec3(0.1f, kapýYukseklik, kapýGeniþlik));
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(odaRightDoor));
         glDrawArrays(GL_TRIANGLES, 0, 36);
-      
+ 
+        // Elektrik
+        // Elektrik düðmesi (2. katta, oda kapýsýnýn yanýnda)
+        glm::vec3 elektrikKutusuRenk = elektrikAcik ? glm::vec3(0.3f, 1.0f, 0.3f) : glm::vec3(0.7f, 0.1f, 0.1f);
+        glUniform3fv(objectColorLoc, 1, glm::value_ptr(elektrikKutusuRenk));
+        glm::mat4 elektrikButton = glm::translate(glm::mat4(1.0f), glm::vec3(-19.0f, 15.5f, 6.5f)); // Kapýdan hafif saðda/önde
+        elektrikButton = glm::scale(elektrikButton, glm::vec3(0.6f, 0.6f, 0.6f));
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(elektrikButton));
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+
 //--------- KEDÝ---------------------------------------------------------------
 
         // Kediyi çizdiðin yere (gövde baþlangýcý)
@@ -1311,24 +1335,26 @@ void processInput(GLFWwindow* window){
         ePressedLastFrame = false;
     }
 
-    //static bool eKeyPressed = false;
-    //if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
-    //    if (!eKeyPressed && doorsOpen && elevatorY == 0.0f) {
-    //        elevatorMovingUp = true;
-    //        doorsOpen = false; // Hareketten önce kapý kapansýn
-    //        doorAnimTime = 0.0f;
-    //    }
-    //    eKeyPressed = true;
-    //}
-    //else {
-    //    eKeyPressed = false;
-    //}
+   
+
+    static bool rPressedLastFrame = false;
+    if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
+        if (!rPressedLastFrame) {
+            elektrikAcik = !elektrikAcik;
+            std::cout << "Elektrik " << (elektrikAcik ? "Açýk!" : "Kapalý!") << std::endl;
+        }
+        rPressedLastFrame = true;
+    }
+    else {
+        rPressedLastFrame = false;
+    }
+
 
     //Asansör aþaðý yukarý kontrol
     static bool upPressedLastFrame = false;
     static bool downPressedLastFrame = false;
 
-    if (!elevatorMoving && elevatorWaitTime <= 0.0f) {
+    if (elektrikAcik && !elevatorMoving && elevatorWaitTime <= 0.0f) {
         if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS && !upPressedLastFrame && currentFloor < maxFloor) {
             currentFloor++;
             elevatorWaitTime = elevatorWaitDuration;
