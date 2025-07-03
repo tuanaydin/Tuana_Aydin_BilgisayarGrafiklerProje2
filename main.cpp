@@ -147,27 +147,17 @@ CameraMode currentCameraMode = THIRD_PERSON;
 extern glm::vec3 catPosition; // ana taným main'in üstünde
 
 
-glm::vec3 catPosition = glm::vec3(0.0f, 10.1f, 0.0f);
+glm::vec3 catPosition = glm::vec3(0.0f, 10.6f, 0.0f);
 glm::vec3 catFront = glm::vec3(0.0f, 0.0f, -1.0f);
 float catYaw = 0.0f;
 
 
-// FPS ve Kamera Update
-//void updateCameraFPS() {
-//    if (currentCameraMode == FIRST_PERSON) {
-//        glm::vec3 fpsCameraOffset = glm::vec3(0.0f, 1.0f, 0.0f); // Kedinin baþý hizasý
-//        cameraPos = catPosition + fpsCameraOffset;
-//        cameraFront.x = sin(catYaw) * cos(glm::radians(pitch));
-//        cameraFront.y = sin(glm::radians(pitch));
-//        cameraFront.z = cos(catYaw) * cos(glm::radians(pitch));
-//        cameraFront = glm::normalize(cameraFront);
-//    }
-//    else {
-//        glm::vec3 offset(0.0f, 3.0f, 5.0f);
-//        cameraPos = catPosition + offset;
-//        cameraFront = glm::normalize(catPosition - cameraPos);
-//    }
-//}
+//Kapý 
+// --- ODA KAPISI animasyonu için deðiþkenler ---
+bool roomDoorOpen = false;
+float roomDoorAnim = 0.0f;
+float roomDoorAnimDuration = 1.0f;
+float roomDoorMaxOffset = 1.5f;
 
 
 // Kamera Ayarlarý
@@ -515,6 +505,27 @@ int main()
 
         glBindVertexArray(VAO);
 
+       //
+       if (currentCameraMode == THIRD_PERSON) {
+        glm::vec3 offset(0.0f, 3.0f, 5.0f);
+        cameraPos = catPosition + offset;
+        cameraFront = glm::normalize(catPosition - cameraPos);
+    }
+        else if (currentCameraMode == FIRST_PERSON) {
+           float ileriMesafe = 2.25f; // ne kadar önde olsun (0.2 - 0.5 arasý dene)
+           glm::vec3 ileriVektor = glm::normalize(glm::vec3(sin(glm::radians(yaw)), 0, cos(glm::radians(yaw))));
+           cameraPos = catPosition + glm::vec3(0.0f, 0.7f, 0.0f) + ileriVektor * ileriMesafe;
+        }
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         GLint modelLoc = glGetUniformLocation(shaderProgram, "model");
         GLint objectColorLoc = glGetUniformLocation(shaderProgram, "objectColor");
 
@@ -981,30 +992,34 @@ int main()
 
 
 //------------------------------------------------------Duvarlar---------------------------------
-
-///Kapý----------------------------------------------------------------------------------------
-        glm::vec3 doorColor = glm::vec3(0.9f, 0.9f, 0.9f); 
-        glUniform3fv(objectColorLoc, 1, glm::value_ptr(doorColor));
-
-        // Kapý animasyonu ilerleyiþi
-        if (doorAnimTime < doorAnimDuration) {
-            doorAnimTime += deltaTime;
+        // ODA KAPISI animasyonunu güncelle
+        if (roomDoorAnim < roomDoorAnimDuration) {
+            roomDoorAnim += deltaTime;
         }
-        float degisim = glm::clamp(doorAnimTime / doorAnimDuration, 0.0f, 1.0f);
-        float currentOffsetkapý = doorsOpen ? degisim * doorMaxOffset : (1.0f - degisim) * doorMaxOffset;
+        float roomDoorProgress = glm::clamp(roomDoorAnim / roomDoorAnimDuration, 0.0f, 1.0f);
+        float roomDoorOffset = roomDoorOpen ? roomDoorProgress * roomDoorMaxOffset : (1.0f - roomDoorProgress) * roomDoorMaxOffset;
+///Kapý----------------------------------------------------------------------------------------
+        glm::vec3 doorColor = glm::vec3(0.7f, 0.5f, 0.3f);
+        glUniform3fv(objectColorLoc, 1, glm::value_ptr(doorColor));
+     
+        glm::vec3 duvarMerkez(10.0f, 15.0f, 8.0f); // 2. kat, sað bölme duvarý
+        float kapýYukseklik = 10.0f;
+        float kapýGeniþlik = 4.0f;
 
-        // Sol Kapý (Z = +1), sola kayar
-        leftDoor = glm::translate(glm::mat4(1.0f), shaftCenter + glm::vec3(-1.9f - currentOffsetkapý, 15.0f, 0.75f));
-        leftDoor = glm::scale(leftDoor, glm::vec3(6.0f, 10.0f, 0.05f));
-        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(leftDoor));
+        // Sol Kapý (Z yönünde sola kayar)
+        glm::mat4 odaLeftDoor = glm::translate(glm::mat4(1.0f),
+            duvarMerkez + glm::vec3(0.0f, 0.0f, -kapýGeniþlik / 2.0f - roomDoorOffset));
+        odaLeftDoor = glm::scale(odaLeftDoor, glm::vec3(0.1f, kapýYukseklik, kapýGeniþlik));
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(odaLeftDoor));
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
-        // Sað Kapý (Z = +1), saða kayar
-        rightDoor = glm::translate(glm::mat4(1.0f), shaftCenter + glm::vec3(1.9f + currentOffsetkapý, 15.0f, 0.75f));
-        rightDoor = glm::scale(rightDoor, glm::vec3(6.0f, 10.0f, 0.05f));
-        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(rightDoor));
+        // Sað Kapý (Z yönünde saða kayar)
+        glm::mat4 odaRightDoor = glm::translate(glm::mat4(1.0f),
+            duvarMerkez + glm::vec3(0.0f, 0.0f, kapýGeniþlik / 2.0f + roomDoorOffset));
+        odaRightDoor = glm::scale(odaRightDoor, glm::vec3(0.1f, kapýYukseklik, kapýGeniþlik));
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(odaRightDoor));
         glDrawArrays(GL_TRIANGLES, 0, 36);
-
+      
 //--------- KEDÝ---------------------------------------------------------------
 
         // Kediyi çizdiðin yere (gövde baþlangýcý)
@@ -1220,28 +1235,69 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 // Klavyeden Tuþlarla Kontrol
 void processInput(GLFWwindow* window){
-    const float cameraSpeed = 2.5f * deltaTime;
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)//Ekrandan çýkýþ
-        glfwSetWindowShouldClose(window, true);
+    //const float cameraSpeed = 2.5f * deltaTime;
+    //if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)//Ekrandan çýkýþ
+    //    glfwSetWindowShouldClose(window, true);
 
-    // FPS - TPS kamera geçiþi
+    //// FPS - TPS kamera geçiþi
+    //if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
+    //    currentCameraMode = FIRST_PERSON;
+    //if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)
+    //    currentCameraMode = THIRD_PERSON;
+
+
+    //if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)//Ekrandan çýkýþ
+    //    glfwSetWindowShouldClose(window, true);
+    //if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    //    cameraPos += cameraSpeed * cameraFront;
+    //if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    //    cameraPos -= cameraSpeed * cameraFront;
+    //if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    //    cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    //if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    //    cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+
+    ///----------------------Yukarýsý ilk çalýþan versiyon
+
+    const float cameraSpeed = 2.5f * deltaTime;
+    const float catSpeed = 2.0f * deltaTime;
+
+    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)//Ekrandan çýkýþ
+       glfwSetWindowShouldClose(window, true);
+    // Kamera modlarý arasý geçiþ
     if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
         currentCameraMode = FIRST_PERSON;
     if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)
         currentCameraMode = THIRD_PERSON;
 
+    // Kamera hareketi (sadece TPS modda aktif olmalý)
+    if (currentCameraMode == THIRD_PERSON) {
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+            cameraPos += cameraSpeed * cameraFront;
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+            cameraPos -= cameraSpeed * cameraFront;
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+            cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+            cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    }
 
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)//Ekrandan çýkýþ
-        glfwSetWindowShouldClose(window, true);
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        cameraPos += cameraSpeed * cameraFront;
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        cameraPos -= cameraSpeed * cameraFront;
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    // FPS modunda: Kedi hareketi (kamera deðil!)
+    if (currentCameraMode == FIRST_PERSON) {
+        glm::vec3 forward = glm::normalize(glm::vec3(sin(glm::radians(yaw)), 0, cos(glm::radians(yaw))));
+        glm::vec3 right = glm::normalize(glm::cross(forward, glm::vec3(0, 1, 0)));
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+            catPosition += forward * catSpeed;
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+            catPosition -= forward * catSpeed;
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+            catPosition -= right * catSpeed;
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+            catPosition += right * catSpeed;
+    
+    }
 
+    /// Asansör kontrolü
     static bool ePressedLastFrame = false;
 
     if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
@@ -1268,6 +1324,7 @@ void processInput(GLFWwindow* window){
     //    eKeyPressed = false;
     //}
 
+    //Asansör aþaðý yukarý kontrol
     static bool upPressedLastFrame = false;
     static bool downPressedLastFrame = false;
 
@@ -1286,6 +1343,21 @@ void processInput(GLFWwindow* window){
         }
         downPressedLastFrame = glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS;
     } 
+
+    // ODA KAPISI Space ile aç/kapat
+    static bool spacePressedLastFrame = false;
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+        if (!spacePressedLastFrame) {
+            roomDoorOpen = !roomDoorOpen;
+            roomDoorAnim = 0.0f; // Animasyon baþlasýn
+        }
+        spacePressedLastFrame = true;
+    }
+    else {
+        spacePressedLastFrame = false;
+    }
+
+
 
     //Kapýnýn Açýlýp Kapanmasý
     /*static bool mPressedLastFrame = false;
@@ -1429,48 +1501,81 @@ void processInput(GLFWwindow* window){
 //Fare hareketlerinin kontrolü
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
  
+    //
+    //if (currentCameraMode != FIRST_PERSON)
+    //    return;
+
+
+    //if (firstMouse) //Ýlk fare hareketi
+    //{
+    //    lastX = xpos;
+    //    lastY = ypos;
+    //    firstMouse = false;
+    //    return;
+    //}
+    ////Poziyon farklarý
+    //float xoffset = xpos - lastX;
+    //float yoffset = lastY - ypos;
+    //lastX = xpos; lastY = ypos;
+    ////Hassasiyet
+    //float sensitivity = 0.1f;
+    //xoffset *= sensitivity;
+    //yoffset *= sensitivity;
+    ////Yön açýlarý 
+    //yaw += xoffset;//saða sola dönüþ 
+    //pitch += yoffset;//Yukarý aþaðý dönüþ
+    ////Sýnýrlandýrma baþ aþaðý olamamsý için 90 derecede
+    //if (pitch > 89.0f)
+    //{
+    //    pitch = 89.0f;
+    //}
+    //if (pitch < -89.0f) {
+    //    pitch = -89.0f;
+    //}
+    //
+    ////Yeni yön vektörünün hesabý
+    //glm::vec3 front;
+    //front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    //front.y = sin(glm::radians(pitch));
+    //front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+    //cameraFront = glm::normalize(front);
+    //
+    //Yukarýsý ilk çalýþan versiyon
     
-    if (currentCameraMode != FIRST_PERSON)
-        return;
-
-
-    if (firstMouse) //Ýlk fare hareketi
-    {
+    if (firstMouse) {
         lastX = xpos;
         lastY = ypos;
         firstMouse = false;
         return;
     }
-    //Poziyon farklarý
+
     float xoffset = xpos - lastX;
     float yoffset = lastY - ypos;
     lastX = xpos; lastY = ypos;
-    //Hassasiyet
+
     float sensitivity = 0.1f;
     xoffset *= sensitivity;
     yoffset *= sensitivity;
-    //Yön açýlarý 
-    yaw += xoffset;//saða sola dönüþ 
-    pitch += yoffset;//Yukarý aþaðý dönüþ
-    //Sýnýrlandýrma baþ aþaðý olamamsý için 90 derecede
-    if (pitch > 89.0f)
-    {
-        pitch = 89.0f;
+
+    if (currentCameraMode == FIRST_PERSON) {
+        yaw += xoffset;       // FPS modunda YAW hem kamera hem kedi
+        pitch += yoffset;
+        if (pitch > 89.0f) pitch = 89.0f;
+        if (pitch < -89.0f) pitch = -89.0f;
+        catYaw = glm::radians(yaw); // <<< Burasý çok önemli!
     }
-    if (pitch < -89.0f) {
-        pitch = -89.0f;
+    else {
+        yaw += xoffset;
+        pitch += yoffset;
+        if (pitch > 89.0f) pitch = 89.0f;
+        if (pitch < -89.0f) pitch = -89.0f;
     }
-    
-    //Yeni yön vektörünün hesabý
+
     glm::vec3 front;
     front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
     front.y = sin(glm::radians(pitch));
     front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
     cameraFront = glm::normalize(front);
-    
-    
-    
-    
     
     
     
