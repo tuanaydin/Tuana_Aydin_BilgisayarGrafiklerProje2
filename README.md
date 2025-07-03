@@ -4,8 +4,8 @@
 **Ders:** Bilgisayar Grafikleri  
 **Teslim Tarihi:** 30.06.2025
 **Öğrenci Tarafında Teslim Tarihi:** 03.07.2025
-**Proje Teması:** Kütüphane Sahnesi 
-
+**Proje Teması:** Müze Sahnesi 
+**Render Videosu Link:**   https://drive.google.com/drive/folders/1YwROywR0SqWeixNM0QeS8apGQyHLPtvc?usp=sharing 
 Bilgisayar Grafikleri dersi kapsamında verilen projede özgün bir temaya veya kısa bir hikâyeye dayanan, etkileşimli veya statik bir 3D sahne oluşturulması beklenmektedir. Bu sahnede OpenGL kullanılarak en az üç adet nesne (örneğin bir karakter, yapı, çevre öğesi) tanımlanmalı ve her biri bilgisayar grafikleri temel prensiplerine göre modellenmelidir. Sahne, dönüşümler, ışıklandırma ve shader kullanımı ile zenginleştirilmelidir.
 Bu amaç doğrultusunda OpenGL 3.3 versiyonu kullanılarak Kütüphane temasındaki bir sahne tasarlanmıştır.
  
